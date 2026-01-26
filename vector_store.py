@@ -1,6 +1,25 @@
 """
-Vector Store Module
-Manages FAISS vector database for efficient similarity search.
+Vector Store Module - High-Performance Similarity Search
+=======================================================
+
+This module manages the FAISS vector database that powers RAGnarok's semantic
+document retrieval system.
+
+Key Features:
+- FAISS (Facebook AI Similarity Search) integration
+- Cosine similarity search for semantic matching
+- Efficient storage and retrieval of embeddings
+- Metadata management for source attribution
+- Persistent storage with serialization
+
+Technical Details:
+- Index Type: IndexFlatIP (Inner Product for cosine similarity)
+- Similarity Metric: Cosine similarity via normalized vectors
+- Storage: Binary serialization with pickle for metadata
+- Scalability: Supports thousands of documents efficiently
+
+Author: RAGnarok Team
+Version: 2.0.0
 """
 
 import os
@@ -11,23 +30,62 @@ from typing import List, Dict, Tuple
 
 
 class VectorStore:
+    """
+    FAISS-Based Vector Database
+    ==========================
+    
+    Manages high-dimensional vector storage and similarity search for
+    RAGnarok's document retrieval system.
+    
+    Architecture:
+    - FAISS for efficient similarity search
+    - Separate metadata storage for document information
+    - Normalized vectors for cosine similarity computation
+    - Persistent storage for session continuity
+    
+    Similarity Search:
+    - Uses cosine similarity (angle between vectors)
+    - Normalized vectors enable efficient inner product computation
+    - Results ranked by relevance score [0, 1]
+    """
 
     
     def __init__(self, dimension: int, index_type: str = "flat"):
-
+        """
+        Initialize Vector Store
+        ======================
+        
+        Creates a new FAISS index for storing and searching document embeddings.
+        
+        Args:
+            dimension (int): Dimensionality of embedding vectors (e.g., 768 for BGE)
+            index_type (str): Type of FAISS index to use
+                            Options: "flat", "cosine", "l2"
+                            Default: "flat" (exact search)
+        
+        Index Types:
+        - "flat"/"cosine": Exact cosine similarity search (IndexFlatIP)
+        - "l2": Exact L2 distance search (IndexFlatL2)
+        
+        Performance Notes:
+        - Flat indices provide exact results but scale O(n)
+        - For large datasets, consider IVF indices for approximate search
+        - Current implementation optimized for <10K documents
+        """
         self.dimension = dimension
         self.index_type = index_type
         
-        
+        # Initialize FAISS index based on specified type
         if index_type == "cosine" or index_type == "flat":
-           
+            # Inner Product index for cosine similarity (with normalized vectors)
             self.index = faiss.IndexFlatIP(dimension)
         elif index_type == "l2":
+            # L2 distance index for Euclidean similarity
             self.index = faiss.IndexFlatL2(dimension)
         else:
             raise ValueError(f"Unsupported index type: {index_type}")
         
-        
+        # Separate storage for document metadata (source, chunk info, etc.)
         self.metadata = []
     
     def add_vectors(self, vectors: np.ndarray, metadata_list: List[Dict]):
