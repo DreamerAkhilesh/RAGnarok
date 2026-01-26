@@ -1,7 +1,23 @@
 """
-Guardrails Module
-Implements safety controls and output filtering to prevent hallucinations
-and ensure answers are based only on retrieved context.
+Guardrails Module - AI Safety and Response Validation
+====================================================
+
+This module implements comprehensive safety controls to prevent hallucinations
+and ensure reliable, grounded responses in RAGnarok's document intelligence system.
+
+Key Safety Mechanisms:
+- Confidence thresholding to filter irrelevant contexts
+- Hallucination detection through keyword monitoring
+- Response validation against retrieved contexts
+- Explicit refusal patterns for missing information
+- Warning systems for low-confidence responses
+
+Philosophy:
+"Better to refuse than to hallucinate" - The system explicitly states when
+information is not available rather than generating potentially incorrect responses.
+
+Author: RAGnarok Team
+Version: 2.0.0
 """
 
 import re
@@ -9,14 +25,52 @@ from typing import Dict, List, Tuple, Optional
 
 
 class Guardrails:
+    """
+    AI Safety and Response Validation System
+    =======================================
+    
+    Implements multi-layer validation to ensure RAGnarok responses are:
+    - Grounded in retrieved document contexts
+    - Confident enough to be reliable
+    - Explicitly refuse when information is unavailable
+    - Transparent about uncertainty and limitations
+    
+    Safety Layers:
+    1. Confidence Thresholding: Filter low-relevance contexts
+    2. Hallucination Detection: Monitor for refusal keywords
+    3. Context Validation: Ensure responses are document-based
+    4. Warning Generation: Alert users to potential issues
+    """
    
     
     def __init__(self, min_confidence: float = 0.5, require_sources: bool = True):
-       
+        """
+        Initialize Guardrails System
+        ===========================
+        
+        Sets up the safety validation system with configurable thresholds.
+        
+        Args:
+            min_confidence (float): Minimum similarity score for context acceptance
+                                  Default: 0.5 (balanced precision/recall)
+            require_sources (bool): Whether to require source attribution
+                                  Default: True (always require sources)
+        
+        Confidence Threshold Rationale:
+        - 0.5: Balanced threshold that filters clearly irrelevant content
+        - Higher values (0.7+): More conservative, may miss relevant info
+        - Lower values (0.3-): More permissive, may include noise
+        
+        Refusal Keywords:
+        - Patterns that indicate the model acknowledges missing information
+        - Preferred over hallucinated responses
+        - Helps identify when the system is working correctly
+        """
         self.min_confidence = min_confidence
         self.require_sources = require_sources
         
-        # Keywords that might indicate hallucination or refusal
+        # Keywords that indicate proper refusal behavior (not hallucination)
+        # These are GOOD signs that the model is being honest about limitations
         self.refusal_keywords = [
             "i don't know",
             "i cannot",
