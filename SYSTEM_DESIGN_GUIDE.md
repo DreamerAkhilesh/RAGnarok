@@ -1,8 +1,8 @@
-# Enhanced Resume - System Design & Architecture Guide
+# RAGnarok - System Design & Architecture Guide
 
 ## 🎯 System Overview
 
-**Enhanced Resume** is a production-ready Retrieval-Augmented Generation (RAG) system designed to solve hallucination problems in AI-powered document question answering. This guide provides comprehensive coverage of the system's architecture, design decisions, and implementation details for developers, researchers, and system architects.
+**RAGnarok** is a production-ready Retrieval-Augmented Generation (RAG) system designed to solve hallucination problems in AI-powered document question answering. This guide provides comprehensive coverage of the system's architecture, design decisions, and implementation details for developers, researchers, and system architects.
 
 ---
 
@@ -345,4 +345,4 @@ QueryService(load_balanced=True)
 
 ---
 
-This system design guide provides comprehensive coverage of the Enhanced Resume RAG architecture, serving as both documentation for current implementation and roadmap for future enhancements. The modular design enables incremental improvements while maintaining system reliability and performance.
+This system design guide provides comprehensive coverage of the RAGnarok RAG architecture, serving as both documentation for current implementation and roadmap for future enhancements. The modular design enables incremental improvements while maintaining system reliability and performance.
