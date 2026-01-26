@@ -1,8 +1,8 @@
-# Enhanced Resume - Technical Documentation
+# RAGnarok - Technical Documentation
 
 ## System Architecture Overview
 
-**Enhanced Resume** is a Retrieval-Augmented Generation (RAG) system that provides intelligent document-based question answering. The system prevents hallucinations by strictly answering questions based only on provided documents.
+**RAGnarok** is a Retrieval-Augmented Generation (RAG) system that provides intelligent document-based question answering. The system prevents hallucinations by strictly answering questions based only on provided documents.
 
 ### Core Components Architecture
 
@@ -156,7 +156,7 @@ def validate_response(self, response: str, contexts: List[str],
 
 ### 6. LLM Integration (Ollama)
 
-**Model**: Llama3 (default, configurable)
+**Model**: Gemma 2B (default, configurable)
 
 **Configuration**:
 - **Temperature**: 0.1 (low for factual consistency)
@@ -199,7 +199,7 @@ Vector Storage → Metadata Indexing
 ### Key Parameters:
 ```python
 EMBEDDING_MODEL_DEFAULT = "BAAI/bge-base-en-v1.5"
-LLM_MODEL_DEFAULT = "llama3"
+LLM_MODEL_DEFAULT = "gemma:2b"
 MIN_CONFIDENCE_DEFAULT = 0.5
 TOP_K_DEFAULT = 5
 CHUNK_SIZE = 512
@@ -243,14 +243,54 @@ CHUNK_OVERLAP = 50
 
 ## Deployment Architecture
 
+### Docker-Based LLM Deployment
+
+RAGnarok uses Docker for LLM deployment, providing several advantages:
+
+**Benefits of Docker Deployment:**
+- **Isolation**: LLM runs in isolated container environment
+- **Portability**: Consistent deployment across different systems
+- **Resource Management**: Better control over GPU/CPU allocation
+- **Version Control**: Easy model version management
+- **Scalability**: Simple horizontal scaling with multiple containers
+
+**Docker Configuration:**
+```bash
+# Run Ollama container with persistent storage
+docker run -d \
+  -v ollama:/root/.ollama \
+  -p 11434:11434 \
+  --name ollama \
+  ollama/ollama
+
+# Pull and manage models
+docker exec -it ollama ollama pull gemma:2b
+docker exec -it ollama ollama list
+```
+
+**Integration with RAGnarok:**
+```python
+# RAG Pipeline configuration for Docker Ollama
+pipeline = RAGPipeline(
+    embedding_model="BAAI/bge-base-en-v1.5",
+    llm_model="gemma:2b",
+    ollama_host="http://localhost:11434",  # Docker container endpoint
+    min_confidence=0.5
+)
+```
+
 ### Local Development:
 ```bash
-# Setup
+# Setup with Docker
+docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
+docker exec -it ollama ollama pull gemma:2b
+
+# Python environment
 python -m venv venv
 pip install -r requirements.txt
-ollama pull llama3
 
 # Run
+python main.py setup
 streamlit run app.py
 ```
 
