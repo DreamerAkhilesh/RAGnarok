@@ -104,7 +104,7 @@ Ideal for knowledge management, research, document analysis, and any scenario re
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/yourusername/ragnarok.git
+git clone https://github.com/DreamerAkhilesh/ragnarok.git
 cd ragnarok
 ```
 
