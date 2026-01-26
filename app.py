@@ -1,6 +1,25 @@
 """
-Streamlit UI for RAG Application
-Provides a user-friendly web interface for the Knowledge Assistant.
+RAGnarok Streamlit Web Application
+=================================
+
+Main web interface for RAGnarok's document intelligence system.
+Provides an intuitive UI for document loading, query processing, and result visualization.
+
+Key Features:
+- Document upload and processing interface
+- Real-time query processing with confidence scoring
+- Source attribution and context visualization
+- System configuration display
+- Error handling and user feedback
+
+Architecture:
+- Streamlit for reactive web UI
+- Session state management for pipeline persistence
+- Docker-aware Ollama integration
+- Responsive design for various screen sizes
+
+Author: RAGnarok Team
+Version: 2.0.0 (Docker + Gemma 2B)
 """
 
 import streamlit as st
@@ -10,12 +29,21 @@ from document_processor import DocumentProcessor
 from rag_pipeline import RAGPipeline
 from vector_store import VectorStore
 
-# Fixed configuration values (kept simple and visible on the main screen)
-EMBEDDING_MODEL_DEFAULT = "BAAI/bge-base-en-v1.5"
-LLM_MODEL_DEFAULT = "gemma:2b"
-OLLAMA_HOST_DEFAULT = "http://localhost:11434"
-MIN_CONFIDENCE_DEFAULT = 0.5
-TOP_K_DEFAULT = 5
+# =============================================================================
+# CONFIGURATION CONSTANTS
+# =============================================================================
+# These values are fixed for optimal performance and are displayed to users
+# for transparency. They represent the best-tested configuration for RAGnarok.
+
+EMBEDDING_MODEL_DEFAULT = "BAAI/bge-base-en-v1.5"    # State-of-the-art retrieval embeddings
+LLM_MODEL_DEFAULT = "gemma:2b"                        # Efficient Google model via Docker
+OLLAMA_HOST_DEFAULT = "http://localhost:11434"       # Docker container endpoint
+MIN_CONFIDENCE_DEFAULT = 0.5                         # Balanced precision/recall threshold
+TOP_K_DEFAULT = 5                                    # Optimal context count for responses
+
+# =============================================================================
+# STREAMLIT PAGE CONFIGURATION
+# =============================================================================
 
 # Page configuration
 st.set_page_config(
@@ -24,7 +52,12 @@ st.set_page_config(
     layout="wide"
 )
 
-# Initialize session state
+# =============================================================================
+# SESSION STATE INITIALIZATION
+# =============================================================================
+# Streamlit session state manages the RAG pipeline and document loading status
+# across user interactions. This ensures the system doesn't reload on every query.
+
 if 'rag_pipeline' not in st.session_state:
     st.session_state.rag_pipeline = None
 if 'documents_loaded' not in st.session_state:
@@ -32,12 +65,36 @@ if 'documents_loaded' not in st.session_state:
 if 'vector_store_path' not in st.session_state:
     st.session_state.vector_store_path = "vector_store"
 
+# =============================================================================
+# CORE SYSTEM FUNCTIONS
+# =============================================================================
+
 def initialize_rag_pipeline():
-    """Initialize or load the RAG pipeline."""
+    """
+    Initialize or Load RAG Pipeline
+    ==============================
+    
+    Sets up the RAG pipeline by either loading an existing vector store
+    or creating a new one. This function handles the core system initialization.
+    
+    Returns:
+        bool: True if initialization successful, False otherwise
+    
+    Process:
+    1. Check for existing vector store (saved FAISS index)
+    2. If found, load it with existing embeddings and metadata
+    3. If not found, create new pipeline ready for document ingestion
+    4. Handle errors gracefully with user feedback
+    
+    Session State Updates:
+    - rag_pipeline: The initialized RAGPipeline instance
+    - documents_loaded: Boolean indicating if documents are ready
+    """
     vector_store_path = st.session_state.vector_store_path
     
+    # Check if we have a pre-existing vector store with documents
     if os.path.exists(vector_store_path) and os.path.exists(os.path.join(vector_store_path, "faiss.index")):
-        # Load existing vector store
+        # Load existing vector store with documents
         try:
             vector_store = VectorStore.load(vector_store_path)
             st.session_state.rag_pipeline = RAGPipeline(
@@ -64,36 +121,65 @@ def initialize_rag_pipeline():
         return True
 
 def load_documents():
-    """Load and process documents."""
+    """
+    Process and Load Documents into Vector Store
+    ===========================================
+    
+    Handles the complete document ingestion pipeline from file discovery
+    to vector store creation and persistence.
+    
+    Returns:
+        bool: True if documents loaded successfully, False otherwise
+    
+    Process:
+    1. Check for documents directory and create if needed
+    2. Process all supported documents (PDF, TXT, MD)
+    3. Generate embeddings for all text chunks
+    4. Store in FAISS vector database
+    5. Save vector store for future sessions
+    6. Update session state
+    
+    Error Handling:
+    - Missing documents directory
+    - No supported files found
+    - Document processing errors
+    - Vector store creation failures
+    """
     documents_dir = "documents"
     
+    # Ensure documents directory exists
     if not os.path.exists(documents_dir):
         os.makedirs(documents_dir)
         st.warning(f"Created '{documents_dir}' directory. Please add your documents (PDF, TXT, or Markdown) there.")
         return False
     
-    # Process documents
+    # Initialize document processor with optimal chunking parameters
     processor = DocumentProcessor(chunk_size=512, chunk_overlap=50)
     
+    # Process all documents in the directory
     with st.spinner("Processing documents..."):
         chunks = processor.process_directory(documents_dir)
     
+    # Check if any documents were successfully processed
     if not chunks:
         st.error("No documents found or processed. Please add PDF, TXT, or Markdown files to the 'documents' folder.")
         return False
     
-    # Add to vector store
+    # Add processed chunks to the vector store
     with st.spinner("Generating embeddings and building vector index..."):
         st.session_state.rag_pipeline.add_documents(chunks)
     
-    # Save vector store
+    # Persist vector store for future sessions
     st.session_state.rag_pipeline.vector_store.save(st.session_state.vector_store_path)
     
+    # Update UI and session state
     st.success(f"Successfully loaded {len(chunks)} document chunks from {documents_dir}!")
     st.session_state.documents_loaded = True
     return True
 
-# Main UI
+# =============================================================================
+# MAIN USER INTERFACE
+# =============================================================================
 st.title("⚡ RAGnarok")
 st.markdown("**The End of AI Hallucinations - Grounded Document Intelligence**")
 
