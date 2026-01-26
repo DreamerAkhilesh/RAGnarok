@@ -12,14 +12,15 @@ from vector_store import VectorStore
 
 # Fixed configuration values (kept simple and visible on the main screen)
 EMBEDDING_MODEL_DEFAULT = "BAAI/bge-base-en-v1.5"
-LLM_MODEL_DEFAULT = "llama3"
+LLM_MODEL_DEFAULT = "gemma:2b"
+OLLAMA_HOST_DEFAULT = "http://localhost:11434"
 MIN_CONFIDENCE_DEFAULT = 0.5
 TOP_K_DEFAULT = 5
 
 # Page configuration
 st.set_page_config(
-    page_title="RAG Knowledge Assistant",
-    page_icon="📚",
+    page_title="RAGnarok - The End of AI Hallucinations",
+    page_icon="⚡",
     layout="wide"
 )
 
@@ -42,6 +43,7 @@ def initialize_rag_pipeline():
             st.session_state.rag_pipeline = RAGPipeline(
                 embedding_model=EMBEDDING_MODEL_DEFAULT,
                 llm_model=LLM_MODEL_DEFAULT,
+                ollama_host=OLLAMA_HOST_DEFAULT,
                 vector_store=vector_store,
                 min_confidence=MIN_CONFIDENCE_DEFAULT,
             )
@@ -55,6 +57,7 @@ def initialize_rag_pipeline():
         st.session_state.rag_pipeline = RAGPipeline(
             embedding_model=EMBEDDING_MODEL_DEFAULT,
             llm_model=LLM_MODEL_DEFAULT,
+            ollama_host=OLLAMA_HOST_DEFAULT,
             min_confidence=MIN_CONFIDENCE_DEFAULT,
         )
         st.session_state.documents_loaded = False
@@ -91,8 +94,8 @@ def load_documents():
     return True
 
 # Main UI
-st.title("RAG Knowledge Assistant")
-st.markdown("**Answer questions based strictly on your provided documents**")
+st.title("⚡ RAGnarok")
+st.markdown("**The End of AI Hallucinations - Grounded Document Intelligence**")
 
 
 info_cols = st.columns(4)
@@ -154,6 +157,7 @@ else:
         with st.spinner("Searching documents and generating response..."):
             # Ensure pipeline uses the fixed configuration
             st.session_state.rag_pipeline.llm_model = LLM_MODEL_DEFAULT
+            st.session_state.rag_pipeline.ollama_host = OLLAMA_HOST_DEFAULT
             st.session_state.rag_pipeline.guardrails.min_confidence = MIN_CONFIDENCE_DEFAULT
             
             # Generate response
@@ -185,4 +189,4 @@ else:
 
 # Footer
 st.divider()
-st.caption("Built with open-source tools: Sentence Transformers, FAISS, Ollama, Streamlit")
+st.caption("Built with open-source tools: Sentence Transformers, FAISS, Ollama Docker, Streamlit")
