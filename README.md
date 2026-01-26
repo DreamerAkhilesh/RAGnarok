@@ -364,8 +364,8 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 ### Development Setup
 
 ```bash
-git clone https://github.com/yourusername/enhanced-resume.git
-cd enhanced-resume
+git clone https://github.com/DreamerAkhilesh/RAGnarok.git
+cd RAGnarok
 pip install -r requirements.txt
 pip install -e .
 ```
