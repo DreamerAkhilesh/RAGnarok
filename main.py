@@ -71,7 +71,8 @@ def setup_documents(documents_dir: str = "documents",
 def query_cli(query: str, 
              vector_store_dir: str = "vector_store",
              top_k: int = 5,
-             llm_model: str = "llama3"):
+             llm_model: str = "gemma:2b",
+             ollama_host: str = "http://localhost:11434"):
     """
     Query the RAG system from command line.
     
@@ -95,7 +96,7 @@ def query_cli(query: str,
     vector_store = VectorStore.load(vector_store_dir)
     
     # Initialize pipeline
-    pipeline = RAGPipeline(vector_store=vector_store, llm_model=llm_model)
+    pipeline = RAGPipeline(vector_store=vector_store, llm_model=llm_model, ollama_host=ollama_host)
     
     # Query
     print(f"\nQuery: {query}")
@@ -152,8 +153,10 @@ def main():
                              help='Vector store directory (default: vector_store)')
     query_parser.add_argument('--top-k', type=int, default=5,
                              help='Number of contexts to retrieve (default: 5)')
-    query_parser.add_argument('--llm-model', default='llama3',
-                             help='Ollama model name (default: llama3)')
+    query_parser.add_argument('--llm-model', default='gemma:2b',
+                             help='Ollama model name (default: gemma:2b)')
+    query_parser.add_argument('--ollama-host', default='http://localhost:11434',
+                             help='Ollama host URL (default: http://localhost:11434)')
     
     args = parser.parse_args()
     
@@ -169,7 +172,8 @@ def main():
             query=args.query,
             vector_store_dir=args.vector_store_dir,
             top_k=args.top_k,
-            llm_model=args.llm_model
+            llm_model=args.llm_model,
+            ollama_host=args.ollama_host
         )
     else:
         parser.print_help()

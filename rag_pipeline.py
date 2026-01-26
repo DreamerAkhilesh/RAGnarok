@@ -3,7 +3,7 @@ RAG Pipeline Module
 Implements the complete Retrieval-Augmented Generation pipeline.
 """
 
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 import ollama
 from embeddings import EmbeddingGenerator
 from vector_store import VectorStore
@@ -15,12 +15,14 @@ class RAGPipeline:
     
     def __init__(self, 
                  embedding_model: str = "BAAI/bge-base-en-v1.5",
-                 llm_model: str = "llama3",
+                 llm_model: str = "gemma:2b",
                  vector_store: Optional[VectorStore] = None,
-                 min_confidence: float = 0.5):
+                 min_confidence: float = 0.5,
+                 ollama_host: str = "http://localhost:11434"):
 
         self.embedding_generator = EmbeddingGenerator(model_name=embedding_model)
         self.llm_model = llm_model
+        self.ollama_host = ollama_host
         self.guardrails = Guardrails(min_confidence=min_confidence)
         
         if vector_store is None:
@@ -131,9 +133,12 @@ Answer (based ONLY on the provided documents):"""
         
       
         try:
+            # Configure ollama client with custom host
+            client = ollama.Client(host=self.ollama_host)
+            
             # Try chat API first (preferred), fallback to generate
             try:
-                response = ollama.chat(
+                response = client.chat(
                     model=self.llm_model,
                     messages=[
                         {'role': 'user', 'content': prompt}
@@ -146,7 +151,7 @@ Answer (based ONLY on the provided documents):"""
                 response_text = response['message']['content']
             except (AttributeError, KeyError):
                 # Fallback to generate API
-                response = ollama.generate(
+                response = client.generate(
                     model=self.llm_model,
                     prompt=prompt,
                     options={
@@ -156,7 +161,7 @@ Answer (based ONLY on the provided documents):"""
                 )
                 response_text = response.get('response', str(response))
         except Exception as e:
-            response_text = f"Error generating response: {str(e)}. Please ensure Ollama is running and the model '{self.llm_model}' is installed. Run: ollama pull {self.llm_model}"
+            response_text = f"Error generating response: {str(e)}. Please ensure Ollama is running on {self.ollama_host} and the model '{self.llm_model}' is available."
         
   
         validation = None
