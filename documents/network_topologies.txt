@@ -1,0 +1,225 @@
+© 2018 JETIR September 2018, Volume 5, Issue 9                                                        
+www.jetir.org (ISSN-2349-5162) 
+A Review Paper on Networking Topologies 
+Jasdeep Singh, Raj Kumar, 
+RIMT University, Mandi Gobindgarh, Punjab 
+Email id- jasdeepsingh@rimt.ac.in,raj.kumar@rimt.ac.in 
+
+ABSTRACT: Topology refers to the process of ordering, arranging, or linking things in a certain way. As a result, network 
+topology refers to the process of organising, arranging, or connecting several devices in a network. The many ways in which 
+devices can be connected to one another are referred to as network topology. These network topologies have been divided into 
+sections depending on how devices are connected and how data flows between them. The topologies of star, ring, hybrid, mesh, 
+tree, and bus are some of the topologies that are utilised in various industries for system layout. The merits and disadvantages of 
+these topologies based on connections and data flow have been explored in this study. This article discusses the importance of 
+network topology. This article discusses the growing demand for these topologies in numerous start-ups and global corporations. 
+It highlights how the future of topologies is bright since every organisation needs to set up a network that must be properly 
+organised, resulting in increased use of network topologies. 
+KEYWORDS: Cable, Data, Network, System, Topology.  
+1. INTRODUCTION 
+Networking topology is the process of arranging several elements (such as links and nodes) of a network. It 
+can be referred as a geometric representation of how several systems can be linked and communicate with 
+each other[1]. 
+1.1 Importance of network topology: 
+The network layout is critical for a variety of causes. Above all, it is important for any network’s operation 
+and performance. Picking the correct topology for operational model of any company can increase 
+performance while also it makes it simpler to discover errors, rectify mistakes, and allocate resource more 
+effectively through the network to make sure best network health[2]. 
+A software-created network topology diagram is widely used to demonstrate and alter the architecture and 
+structure of a network. The most significant reason for these diagrams is that they may give visual 
+representations of both physical and logical layouts, helping managers to comprehend the relationships 
+between devices during troubleshooting[3]. 
+An efficient and correctly managed topology can boost energy and efficiency of data that can assist to 
+minimise operating and maintaining of expenses. The manner a network is structured may make or break 
+functioning of network, connection, and protection from downtime. To guarantee that any network is efficient 
+and healthy, effective network administration and monitoring necessitates a thorough understanding of both 
+the logical and physical topology[4]. 
+1.2 Types of Topologies: 
+Figure 1 shows several types of network topologies used for arrangement of systems. There are several types 
+of topologies that are used for arranging systems. These are   discussed below. 
+JETIRFH06055 Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+324 
+© 2018 JETIR September 2018, Volume 5, Issue 9                                                        
+www.jetir.org (ISSN-2349-5162) 
+Star Topology
+Ring Topology
+Mesh 
+Topology
+Network 
+topology
+1.2.1 Physical topology: 
+1.2.2 Bus topology: 
+Logical 
+topology
+Tree Topology
+Physical 
+topology
+Hybrid 
+Topology
+Bus Topology
+Point to point 
+Topology
+Figure 1: Representation of several types of Network Topologies used for arrangement of systems. 
+It deals with the physical connections between several nodes, cables, wires, etc. It is the set-up of numerous 
+elements including links, nodes, etc. of a network, involving device placement and installation of code. In 
+simpler words, it can be said as the physical set-up of the nodes, workstations and cables of network[5].  
+Each system and device present in network are connected to a single cable in a network of bus topology. It 
+sends data in a single way from one end to the other. Line terminators are present on both ends of the shared 
+channel.  Whenever any node wants to transmit a signal through the network, it make that happen by sending 
+a message through network. Irrespective of whom the message has been sent to, it will be received by all 
+accessible stations present in network. In this, there are no bi-directional characteristics. It is a multi-point 
+connection with a non-robust topology as the topology crashes if the backbone breaks[6]. It is also referred as 
+line topology and sometimes as backbone topology. Data flows in the same direction as the cable.  
+If multiple hosts try to send data at same time, it might face some issues. That is why to overcome the issue it 
+utilises Carrier Sense Multiple Access / Collision Avoidance technology (CSMA/CD) or identifies one host 
+as Bus Master. It is a basic kind of networking in which the failure of one device has no impact on the other 
+devices. However, if the common communication channel fails, all other devices will cease working. It is 
+commonly used in standard networks such as 802.3 (Ethernet) and 802.4 standard networks[7]. Figure 2 
+represents how devices can be linked to each other over a network in bus topology and how data flows from 
+one end to another. 
+JETIRFH06055 Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+325 
+© 2018 JETIR September 2018, Volume 5, Issue 9                                                        
+www.jetir.org (ISSN-2349-5162) 
+Figure 2: Represents of how devices are connected in bus topology and how data flows from one end 
+to another. 
+ CSMA (Carrier Sense Multiple Access):  
+It is a type of media access control, which is used for regulating flow of data to ensure integrity of data, or that 
+packets do not get lost. Generally, two different approaches are used for dealing with the problems that are 
+caused when any two nodes deliver messages at the same time. 
+ Carrier Sense Multiple Access with Collision Detection (CSMA CD):  
+It is a technique of access that is used for detecting data collision. The transmitter will cease delivering data if 
+a collision is detected. As a result, it focuses on recovery after a data collision. 
+ Carrier-sense multiple access with collision avoidance (CSMA/CA):  
+It is a technique for avoiding collisions by determining whether transmission medium is busy or not. If the one 
+who send data is busy, he will wait until the media is accessible. This way efficiently reduces the probabilities 
+of a collision. Recovery after the collision is not supported. 
+1.2.3 Ring topology: 
+Each host machine in this kind of topology links to precisely two other machines, forming a circular network 
+structure. Whenever any host wants to interact with or send any message to a host that is not directly next to 
+it, the data is routed via all intermediary hosts. The system, which gets the message of preceding system, passes 
+it to the next system[8]. The administrator may just require one additional cable to join one more host in the 
+current arrangement. It is similar to bus topology; the only difference is that its ends are connected. In this also 
+data flow, take place in one direction only in a loop, which continues to move endlessly in the loop. However, 
+by giving two connections between each network Node, it may be turned bidirectional, which is referred as 
+Dual ring topology. As both the ends are linked, there is no termination point. In it, data moves in clockwise 
+direction. When a ring topology with a high no. of nodes is utilised, many repeaters are needed for the reason 
+that if someone wishes to transmit data to the final node in a ring topology with 90 nodes, the data must transit 
+through 89 nodes before reaching the 90th node[9]. As a result, repeaters are employed in the network for 
+prevention of loss of data. Figure 3 represents of how devices are connected in Ring topology and how data 
+flows in loop. 
+JETIRFH06055 Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+326 
+© 2018 JETIR September 2018, Volume 5, Issue 9                                                        
+www.jetir.org (ISSN-2349-5162) 
+Figure 3: Represents of how devices are connected in Ring topology and how data flows in loop. 
+1.2.4 Star topology: 
+It is most commonly used topology. All of the systems in this topology are linked to a solo hub using a cable. 
+This hub acts as the centre node, with all other nodes linked with it. This hub might be passive in nature that 
+means not intelligent, such as broadcasting devices, or it can be intelligent, i.e., active hubs. Repeaters are 
+present in hubs, which are active. The main computer is referred to as a server, and the devices connected to 
+it as clients. The devices are connected through coaxial cable or RJ-45 connections[10]. 
+In a physical star architecture, hubs or switches are primarily utilised as connecting devices. In this there is no 
+direct interaction of devices, any system have to interact with the hub first. In this to reach its destination, 
+information transmitted from any node in network must travel through the main system, which acts as a 
+repeater and helps in avoiding loss of data. Figure 4 represents how devices are connected in Star topology 
+and how data flows between devices. 
+Figure 4:  Representation of how devices are connected in Star topology and how data flows in 
+loop. 
+1.2.5 Mesh Topology: 
+In this, a host is linked with multiple other systems. In it, point-to-point connection is available between any 
+two systems. Some devices may be present in which only few have point-to-point connection between them. 
+There are two kinds of mesh networks: first, one is complete mesh and other one is partial mesh. Mesh 
+topology, which are partially interconnected, have fewer nodes with only two or three connections, whereas 
+mesh topology, which are fully interconnected, contains all connected nodes as shown in Figure 5. 
+JETIRFH06055 Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+327 
+© 2018 JETIR September 2018, Volume 5, Issue 9                                                        
+www.jetir.org (ISSN-2349-5162) 
+Figure 5:  Represents of how devices are connected in Mesh topology and how data flows in 
+devices. 
+1.2.6 Tree topology: 
+The network is divided into several levels/layers using this topology. A network is divided into 3 categories 
+of network devices, mostly in LANs. The lowest layer is the access layer, which is where systems are linked. 
+The distribution layer is the intermediate layer that acts as a link between the top and lower layer. The topmost 
+layer, referred as core layer, is the network's nerve centre. A point-to-point link exists between all nearby hosts. 
+In a similar way as the bus, topology, in case if the root fails the whole network faces the problem. It is not, 
+however, the only site of failure. Every connection acts as a single point of failure, separating the network in 
+segments, which are inaccessible if it fails. Figure 6 represents of how devices are connected in tree topology 
+and how data flows in devices. 
+Figure 6:  Representation of how devices are connected in tree topology and how data flows in devices. 
+1.2.7 Hybrid topology: 
+It can be said as combination of several topologies. These are commonly used in big Multinational companies 
+where there are personalized topologies for each department. These provide a great flexibility to the network 
+system. Different topologies can be chosen and implement according to the needs and requirement of the user. 
+Figure 7 represents of how devices are linked in hybrid topology using an arrangement of star and ring 
+topology. 
+JETIRFH06055 Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+328 
+© 2018 JETIR September 2018, Volume 5, Issue 9                                                        
+www.jetir.org (ISSN-2349-5162) 
+Figure 7:  Representation of how devices are linked in hybrid topology using an arrangement of star 
+and ring topology. 
+2. DISCUSSION 
+Computer science is a really important and wide branch of engineering. There are many subjects, which are 
+included in the course, which are important for students to have knowledge of such as Analysis of 
+Algorithms, Data structure, Database management, Networking, and many more. These are the subjects, 
+which are important while preparing for several competitive exam, interviews and many technical exams. 
+These subjects comprises of many algorithms, laws and concepts, which are basis for development of 
+various software programs.  
+Networking is one such subject which comprises concepts such as several network terminologies network 
+topologies including Star, Bus, mesh, tree and ring topology, several types of computer networks, several 
+protocols including Transmission Control Protocol (TCP), Internet Protocol (IP), Hyper Text Transfer 
+Protocol (HTTP), and many more which ensures secure and smooth transfer of data, and many more 
+concepts. These concepts are important and deep and focused study of these topics is required by students 
+to understand networking. Few of these concepts have been discussed in this paper. Various topologies have 
+been discussed in this paper. 
+3. CONCLUSION 
+Networking topology is an important concept in networking which deals with several topologies, which 
+defines several ways on how several devices can be connected to each other for exchange of data. There are 
+types of topologies based on different factors. These topologies have been discussed in this paper. Importance 
+of these topologies have been discussed in this paper. It is explained how several arrangements of devices are 
+done in these topologies. Ring topology with its diagrammatic representation along with advantages and 
+disadvantages have been discussed in this paper. Similarly, several other topologies such as mesh, star, bus, 
+and tree and hybrid topology have been discussed in this paper. From every single small to big company, all 
+of these have their several types of networks in which different devices are connected. These connections are 
+done by keeping in mind benefits of several topologies and then accordingly connections are done. As 
+everyday new start, companies are set up so there is a high need of using these topologies, thereby increasing 
+future scope and use of these topologies. 
+REFERENCES 
+[1] 
+[2] 
+[3] 
+[4] 
+[5] 
+E. Ozkan-Canbolat and A. Beraha, “Configuration and innovation related network topology,” J. Innov. Knowl., 2016, doi: 
+10.1016/j.jik.2016.01.013. 
+E. Ozkan-Canbolat and A. Beraha, “A configurational approach to network topology design for product innovation,” J. Bus. Res., 2016, 
+doi: 10.1016/j.jbusres.2016.04.115. 
+D. L. Harrington et al., “Network topology and functional connectivity disturbances precede the onset of Huntington’s disease,” Brain, 
+2015, doi: 10.1093/brain/awv145. 
+G. Engels et al., “Clinical pain and functional network topology in Parkinson’s disease: a resting-state fMRI study,” J. Neural Transm., 
+2018, doi: 10.1007/s00702-018-1916-y. 
+X. Diego, L. Marcon, P. Müller, and J. Sharpe, “Key Features of Turing Systems are Determined Purely by Network Topology,” Phys. 
+Rev. X, 2018, doi: 10.1103/PhysRevX.8.021071. 
+JETIRFH06055 Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+329 
+© 2018 JETIR September 2018, Volume 5, Issue 9                                                        
+www.jetir.org (ISSN-2349-5162) 
+[6] 
+[7] 
+[8] 
+[9] 
+[10] 
+E. Heasley, N. Clifford, and J. Millington, “Integrating network topology metrics into studies of catchment-level effects on habitat 
+diversity,” Hydrol. Earth Syst. Sci. Discuss., 2018, doi: 10.5194/hess-2018-89. 
+V. Deshpande, H. Badis, and L. George, “BTCmap: Mapping bitcoin peer-to-peer network topology,” in 2018 IFIP/IEEE International 
+Conference on Performance Evaluation and Modeling in Wired and Wireless Networks, PEMWN 2018, 2018, doi: 
+10.23919/PEMWN.2018.8548904. 
+B. Bangerter, S. Talwar, R. Arefi, and K. Stewart, “Networks and devices for the 5G era,” IEEE Commun. Mag., 2014, doi: 
+10.1109/MCOM.2014.6736748. 
+G. Rosell-Tarragó, E. Cozzo, and A. Díaz-Guilera, “A complex network framework to model cognition: Unveiling correlation structures 
+from connectivity,” Complexity, 2018, doi: 10.1155/2018/1918753. 
+L. M. Wierenga et al., “A multisample study of longitudinal changes in brain network architecture in 4–13-year-old children,” Hum. 
+Brain Mapp., 2018, doi: 10.1002/hbm.23833. 
+JETIRFH06055 Journal of Emerging Technologies and Innovative Research (JETIR) www.jetir.org 
+330 

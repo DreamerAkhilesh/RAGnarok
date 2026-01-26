@@ -1,0 +1,17 @@
+[project]
+name = "rag"
+version = "0.1.0"
+description = "Retrieval-Augmented Generation (RAG) Application using Open Source Tools"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "sentence-transformers>=2.2.0",
+    "faiss-cpu>=1.7.4",
+    "streamlit>=1.28.0",
+    "pypdf2>=3.0.0",
+    "python-docx>=1.1.0",
+    "markdown>=3.5.0",
+    "ollama>=0.1.0",
+    "numpy>=1.24.0",
+    "tiktoken>=0.5.0",
+]
