@@ -1,8 +1,8 @@
-# 🚀 Enhanced Resume – Intelligent Document Assistant
+# ⚡ RAGnarok – The End of AI Hallucinations
 
 <p align="center">
-  <b>AI-Powered Document Question Answering System</b><br>
-  <i>Retrieval-Augmented Generation with hallucination prevention and source attribution</i>
+  <b>Production-Ready Document Intelligence System</b><br>
+  <i>Retrieval-Augmented Generation with zero-tolerance hallucination prevention</i>
 </p>
 
 <p align="center">
@@ -15,17 +15,18 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/AI-RAG%20System-blue" alt="RAG"/>
-  <img src="https://img.shields.io/badge/LLM-Llama3-green" alt="Llama3"/>
+  <img src="https://img.shields.io/badge/LLM-Gemma%202B-green" alt="Gemma"/>
   <img src="https://img.shields.io/badge/Embeddings-BGE-orange" alt="BGE"/>
   <img src="https://img.shields.io/badge/Vector%20DB-FAISS-red" alt="FAISS"/>
   <img src="https://img.shields.io/badge/UI-Streamlit-purple" alt="Streamlit"/>
+  <img src="https://img.shields.io/badge/Deploy-Docker-blue" alt="Docker"/>
 </p>
 
 ---
 
 ## 🧐 About
 
-**Enhanced Resume** is a production-ready **Retrieval-Augmented Generation (RAG)** system that enables intelligent question-answering over document collections. The system ensures reliable, source-attributed responses by:
+**RAGnarok** is a production-ready **Retrieval-Augmented Generation (RAG)** system that brings the end of AI hallucinations in document-based question answering. The system ensures reliable, source-attributed responses by:
 
 - **Grounding answers in provided documents** - Eliminates hallucination
 - **Providing complete source attribution** - Every answer includes document references
@@ -73,7 +74,7 @@ Ideal for knowledge management, research, document analysis, and any scenario re
 ## 🖼️ Application Screenshots
 
 <p align="center">
-  <img src="screenshots/home.png" alt="Enhanced Resume Home Screen" width="85%"/>
+  <img src="screenshots/home.png" alt="RAGnarok Home Screen" width="85%"/>
 </p>
 
 <p align="center">
@@ -81,7 +82,7 @@ Ideal for knowledge management, research, document analysis, and any scenario re
 </p>
 
 <p align="center">
-  <img src="screenshots/answer.png" alt="Enhanced Resume Answer Screen" width="85%"/>
+  <img src="screenshots/answer.png" alt="RAGnarok Answer Screen" width="85%"/>
 </p>
 
 <p align="center">
@@ -95,7 +96,7 @@ Ideal for knowledge management, research, document analysis, and any scenario re
 ### Prerequisites
 
 - Python 3.11 or higher
-- Ollama installed and running
+- Docker (for Ollama LLM service)
 - 4GB+ RAM recommended
 
 ### Setup Instructions
@@ -103,8 +104,8 @@ Ideal for knowledge management, research, document analysis, and any scenario re
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/yourusername/enhanced-resume.git
-cd enhanced-resume
+git clone https://github.com/yourusername/ragnarok.git
+cd ragnarok
 ```
 
 2. **Create virtual environment**
@@ -125,31 +126,60 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-4. **Setup Ollama and download model**
+4. **Setup Ollama with Docker**
 
 ```bash
-# Start Ollama service
-ollama serve
+# Pull and run Ollama container
+docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
 
-# In another terminal, pull the model
-ollama pull llama3
+# Pull the Gemma 2B model
+docker exec -it ollama ollama pull gemma:2b
+
+# Verify the setup
+curl http://localhost:11434/api/tags
 ```
 
 5. **Add your documents**
 
 ```bash
-# Create documents folder and add your files
-mkdir documents
-# Copy your PDF, TXT, or Markdown files to documents/
+# The documents folder already exists with sample content
+# Add your PDF, TXT, or Markdown files to documents/
 ```
 
-6. **Run the application**
+6. **Process documents and run the application**
+
+````bash
+# Process documents (one-time setup)
+python main.py setup
+
+# Run the web interface
+streamlit run app.py
+Visit `http://localhost:8501` to start using RAGnarok.
+
+### 🐳 Docker Troubleshooting
+
+**Check if Ollama container is running:**
+```bash
+docker ps | grep ollama
+````
+
+**View container logs:**
 
 ```bash
-streamlit run app.py
+docker logs ollama
 ```
 
-Visit `http://localhost:8501` to start using the system.
+**Restart Ollama container:**
+
+```bash
+docker restart ollama
+```
+
+**Test Ollama API:**
+
+```bash
+curl http://localhost:11434/api/tags
+```
 
 ---
 
@@ -190,9 +220,16 @@ flowchart TD
 
 ### **Core AI Components**
 
-- **🧠 Large Language Model**: Llama3 via Ollama (local deployment)
+- **🧠 Large Language Model**: Gemma 2B via Ollama Docker (local deployment)
 - **🔤 Embeddings**: BAAI/bge-base-en-v1.5 (state-of-the-art retrieval model)
 - **🗄️ Vector Database**: FAISS (Facebook AI Similarity Search)
+
+### **Why Gemma 2B?**
+
+- **Efficiency**: Smaller model size (2B parameters) for faster inference
+- **Quality**: Google's latest architecture with strong reasoning capabilities
+- **Resource Friendly**: Lower memory requirements (4GB vs 8GB+ for larger models)
+- **Docker Optimized**: Excellent performance in containerized environments
 
 ### **Document Processing**
 
@@ -282,7 +319,7 @@ print("Sources:", result['sources'])
 ## 📂 Project Structure
 
 ```
-enhanced-resume/
+ragnarok/
 ├── 📱 app.py                    # Streamlit web interface
 ├── 🔧 rag_pipeline.py           # Core RAG orchestration
 ├── 📄 document_processor.py     # Document ingestion & chunking
@@ -311,8 +348,8 @@ The system uses the following default configuration:
 # Embedding Model
 EMBEDDING_MODEL = "BAAI/bge-base-en-v1.5"
 
-# LLM Model (requires Ollama)
-LLM_MODEL = "llama3"
+# LLM Model (requires Ollama Docker)
+LLM_MODEL = "gemma:2b"
 
 # Retrieval Settings
 TOP_K_RESULTS = 5              # Number of contexts to retrieve
@@ -342,9 +379,10 @@ CHUNK_OVERLAP = 50             # Overlap between chunks
 ### Performance Characteristics
 
 - **Document Processing**: ~1000 pages/minute
-- **Query Response**: 2-10 seconds (model dependent)
+- **Query Response**: 1-3 seconds (Gemma 2B optimized)
 - **Document Capacity**: 10,000+ documents supported
-- **Concurrent Users**: 1-5 (single instance)
+- **Concurrent Users**: 5-10 (Docker deployment)
+- **Memory Usage**: 4GB RAM (efficient Gemma 2B model)
 
 ---
 
@@ -395,6 +433,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <p align="center">
-  <b>Enhanced Resume - Intelligent Document Assistant</b><br>
-  <i>Reliable AI-powered document analysis with source attribution</i>
+  <b>RAGnarok - The End of AI Hallucinations</b><br>
+  <i>Production-ready document intelligence with zero-tolerance hallucination prevention</i>
 </p>
