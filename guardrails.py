@@ -20,7 +20,19 @@ Author: RAGnarok Team
 Version: 2.0.0
 """
 
+# ============================================================================
+# IMPORTS - Required libraries for validation
+# ============================================================================
+
+# re: Regular expression operations for pattern matching
+# Used for text analysis and pattern detection
 import re
+
+# typing: Type hints for better code documentation
+# Dict: Type hint for dictionary objects
+# List: Type hint for list objects
+# Tuple: Type hint for tuple objects
+# Optional: Type hint for values that can be None
 from typing import Dict, List, Tuple, Optional
 
 
@@ -42,7 +54,9 @@ class Guardrails:
     4. Warning Generation: Alert users to potential issues
     """
    
-    
+    # ========================================================================
+    # INITIALIZATION METHOD
+    # ========================================================================
     def __init__(self, min_confidence: float = 0.5, require_sources: bool = True):
         """
         Initialize Guardrails System
@@ -66,22 +80,72 @@ class Guardrails:
         - Preferred over hallucinated responses
         - Helps identify when the system is working correctly
         """
+        # ====================================================================
+        # STEP 1: Store confidence threshold
+        # ====================================================================
+        # min_confidence: Minimum similarity score to accept a context
+        # Used to filter out irrelevant document chunks
+        # 
+        # How it works:
+        # - Similarity scores range from 0.0 to 1.0
+        # - 1.0 = perfect match, 0.0 = no similarity
+        # - Contexts with score < min_confidence are rejected
+        #
+        # Example:
+        # - min_confidence = 0.5
+        # - Context with score 0.7: Accepted ✓
+        # - Context with score 0.3: Rejected ✗
+        #
+        # Why 0.5 is a good default:
+        # - Filters out clearly irrelevant content
+        # - Keeps moderately relevant content
+        # - Balances precision (accuracy) and recall (coverage)
         self.min_confidence = min_confidence
+        
+        # ====================================================================
+        # STEP 2: Store source requirement flag
+        # ====================================================================
+        # require_sources: Whether responses must cite sources
+        # Currently not actively enforced but available for future use
+        #
+        # Why require sources?
+        # - Enables fact-checking
+        # - Increases transparency
+        # - Builds user trust
+        # - Prevents hallucinations
         self.require_sources = require_sources
         
-        # Keywords that indicate proper refusal behavior (not hallucination)
-        # These are GOOD signs that the model is being honest about limitations
+        # ====================================================================
+        # STEP 3: Define refusal keywords
+        # ====================================================================
+        # refusal_keywords: List of phrases that indicate honest uncertainty
+        # These are GOOD signs - the model is being honest about limitations
+        #
+        # Why these keywords matter:
+        # - They indicate the model is NOT hallucinating
+        # - They show the model is following instructions
+        # - They demonstrate proper grounding behavior
+        # - They're preferable to making up information
+        #
+        # Philosophy:
+        # "Better to say 'I don't know' than to hallucinate"
+        #
+        # These phrases indicate:
+        # - The model checked the documents
+        # - The information wasn't found
+        # - The model is refusing to guess
+        # - The system is working correctly
         self.refusal_keywords = [
-            "i don't know",
-            "i cannot",
-            "i'm not sure",
-            "i don't have",
-            "not in the provided",
-            "not mentioned",
-            "not available",
-            "cannot determine",
-            "unable to",
-            "no information"
+            "i don't know",              # Direct admission of uncertainty
+            "i cannot",                  # Inability to answer
+            "i'm not sure",              # Uncertainty expression
+            "i don't have",              # Lack of information
+            "not in the provided",       # Explicit document reference
+            "not mentioned",             # Information absence
+            "not available",             # Data unavailability
+            "cannot determine",          # Inability to conclude
+            "unable to",                 # Incapability statement
+            "no information"             # Information absence
         ]
     
     def check_confidence(self, similarity_scores: List[float]) -> Tuple[bool, float]:
