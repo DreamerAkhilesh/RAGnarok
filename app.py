@@ -22,52 +22,122 @@ Author: RAGnarok Team
 Version: 2.0.0 (Docker + Gemma 2B)
 """
 
+# ============================================================================
+# IMPORTS - Required libraries and internal modules
+# ============================================================================
+
+# streamlit: Web application framework for data apps
+# Provides reactive UI components and session state management
+# Automatically handles page reloads and user interactions
 import streamlit as st
+
+# os: Operating system interface for file/directory operations
+# Used to check if directories and files exist
 import os
+
+# Path: Object-oriented filesystem path handling from pathlib
+# Provides cleaner path operations than os.path
 from pathlib import Path
+
+# DocumentProcessor: Our custom module for loading and chunking documents
+# Handles PDF, TXT, and Markdown files
 from document_processor import DocumentProcessor
+
+# RAGPipeline: Core orchestration engine for the RAG workflow
+# Manages embeddings, vector search, LLM communication
 from rag_pipeline import RAGPipeline
+
+# VectorStore: FAISS-based vector database for semantic similarity search
+# Stores document embeddings and performs fast nearest-neighbor search
 from vector_store import VectorStore
 
-# =============================================================================
+# ============================================================================
 # CONFIGURATION CONSTANTS
-# =============================================================================
+# ============================================================================
 # These values are fixed for optimal performance and are displayed to users
 # for transparency. They represent the best-tested configuration for RAGnarok.
+#
+# Why constants?
+# - Ensures consistent configuration across sessions
+# - Makes it easy to update settings in one place
+# - Provides transparency to users about system configuration
+# - Prevents accidental misconfiguration
 
-EMBEDDING_MODEL_DEFAULT = "BAAI/bge-base-en-v1.5"    # State-of-the-art retrieval embeddings
-LLM_MODEL_DEFAULT = "gemma:2b"                        # Efficient Google model via Docker
-OLLAMA_HOST_DEFAULT = "http://localhost:11434"       # Docker container endpoint
-MIN_CONFIDENCE_DEFAULT = 0.5                         # Balanced precision/recall threshold
-TOP_K_DEFAULT = 5                                    # Optimal context count for responses
+# EMBEDDING_MODEL_DEFAULT: Which model to use for text embeddings
+# BGE-base-en-v1.5 is state-of-the-art for retrieval tasks
+# 768 dimensions, optimized for semantic similarity
+EMBEDDING_MODEL_DEFAULT = "BAAI/bge-base-en-v1.5"
 
-# =============================================================================
+# LLM_MODEL_DEFAULT: Which LLM to use for response generation
+# Gemma 2B is efficient (4GB RAM) with good reasoning capabilities
+# Runs in Ollama Docker container
+LLM_MODEL_DEFAULT = "gemma:2b"
+
+# OLLAMA_HOST_DEFAULT: Where the Ollama Docker container is running
+# Standard Ollama port is 11434
+# Change if running on different host/port
+OLLAMA_HOST_DEFAULT = "http://localhost:11434"
+
+# MIN_CONFIDENCE_DEFAULT: Minimum similarity score to accept a context
+# 0.5 is balanced - not too strict, not too permissive
+# Higher = more conservative, Lower = more permissive
+MIN_CONFIDENCE_DEFAULT = 0.5
+
+# TOP_K_DEFAULT: How many document chunks to retrieve for each query
+# 5 is optimal - enough context without overwhelming the LLM
+# More = more context but slower, Less = faster but less context
+TOP_K_DEFAULT = 5
+
+# ============================================================================
 # STREAMLIT PAGE CONFIGURATION
-# =============================================================================
+# ============================================================================
+# Configure the Streamlit page before any other Streamlit commands
+# This must be the first Streamlit command in the script
 
-# Page configuration
+# set_page_config(): Configures the Streamlit page
+# Parameters:
+# - page_title: Shows in browser tab
+# - page_icon: Emoji or image for browser tab
+# - layout: "wide" uses full browser width, "centered" is narrower
 st.set_page_config(
-    page_title="RAGnarok - The End of AI Hallucinations",
-    page_icon="⚡",
-    layout="wide"
+    page_title="RAGnarok - The End of AI Hallucinations",  # Browser tab title
+    page_icon="⚡",                                          # Lightning bolt emoji
+    layout="wide"                                           # Use full width
 )
 
-# =============================================================================
+# ============================================================================
 # SESSION STATE INITIALIZATION
-# =============================================================================
-# Streamlit session state manages the RAG pipeline and document loading status
-# across user interactions. This ensures the system doesn't reload on every query.
+# ============================================================================
+# Streamlit session state persists data across page reloads and interactions
+# Without session state, variables would reset on every interaction
+#
+# Why session state?
+# - Keeps RAG pipeline loaded (don't reload model on every query)
+# - Remembers if documents are loaded
+# - Maintains configuration across interactions
+# - Improves performance (no repeated initialization)
 
+# Check if 'rag_pipeline' key exists in session state
+# If not, initialize it to None
+# This will hold the RAGPipeline instance once initialized
 if 'rag_pipeline' not in st.session_state:
     st.session_state.rag_pipeline = None
+
+# Check if 'documents_loaded' key exists in session state
+# If not, initialize it to False
+# This tracks whether documents have been processed and loaded
 if 'documents_loaded' not in st.session_state:
     st.session_state.documents_loaded = False
+
+# Check if 'vector_store_path' key exists in session state
+# If not, initialize it to "vector_store"
+# This is where the FAISS index and metadata are saved
 if 'vector_store_path' not in st.session_state:
     st.session_state.vector_store_path = "vector_store"
 
-# =============================================================================
+# ============================================================================
 # CORE SYSTEM FUNCTIONS
-# =============================================================================
+# ============================================================================
 
 def initialize_rag_pipeline():
     """
@@ -90,34 +160,99 @@ def initialize_rag_pipeline():
     - rag_pipeline: The initialized RAGPipeline instance
     - documents_loaded: Boolean indicating if documents are ready
     """
+    # ========================================================================
+    # STEP 1: Get vector store path from session state
+    # ========================================================================
+    # Retrieve the path where vector store should be saved/loaded
+    # Default: "vector_store" directory
     vector_store_path = st.session_state.vector_store_path
     
-    # Check if we have a pre-existing vector store with documents
+    # ========================================================================
+    # STEP 2: Check if vector store already exists
+    # ========================================================================
+    # Check two conditions:
+    # 1. Directory exists: os.path.exists(vector_store_path)
+    # 2. FAISS index file exists: os.path.exists(.../"faiss.index")
+    #
+    # Why check both?
+    # - Directory might exist but be empty
+    # - faiss.index is the main file we need
+    # - If both exist, we have a valid vector store to load
     if os.path.exists(vector_store_path) and os.path.exists(os.path.join(vector_store_path, "faiss.index")):
-        # Load existing vector store with documents
+        # ====================================================================
+        # STEP 2a: Load existing vector store
+        # ====================================================================
+        # We have a saved vector store - load it instead of creating new
         try:
+            # ================================================================
+            # STEP 2a-i: Load vector store from disk
+            # ================================================================
+            # VectorStore.load(): Class method that:
+            # 1. Reads config.pkl (dimension, index type)
+            # 2. Loads faiss.index (embeddings)
+            # 3. Loads metadata.pkl (document information)
+            # 4. Returns fully initialized VectorStore instance
             vector_store = VectorStore.load(vector_store_path)
+            
+            # ================================================================
+            # STEP 2a-ii: Create RAG pipeline with loaded vector store
+            # ================================================================
+            # Initialize RAGPipeline with:
+            # - embedding_model: BGE model for text embeddings
+            # - llm_model: Gemma 2B for response generation
+            # - ollama_host: Docker container endpoint
+            # - vector_store: Pre-loaded vector store (not creating new)
+            # - min_confidence: Threshold for filtering contexts
             st.session_state.rag_pipeline = RAGPipeline(
                 embedding_model=EMBEDDING_MODEL_DEFAULT,
                 llm_model=LLM_MODEL_DEFAULT,
                 ollama_host=OLLAMA_HOST_DEFAULT,
-                vector_store=vector_store,
+                vector_store=vector_store,              # Use loaded store
                 min_confidence=MIN_CONFIDENCE_DEFAULT,
             )
+            
+            # ================================================================
+            # STEP 2a-iii: Mark documents as loaded
+            # ================================================================
+            # Set flag to True since we loaded a vector store with documents
+            # This enables the query interface
             st.session_state.documents_loaded = True
+            
+            # Return True to indicate successful initialization
             return True
+            
+        # ====================================================================
+        # STEP 2b: Handle errors during loading
+        # ====================================================================
         except Exception as e:
+            # If loading fails (corrupted files, version mismatch, etc.)
+            # Display error message to user
+            # st.error(): Shows red error box in Streamlit UI
             st.error(f"Error loading vector store: {str(e)}")
+            
+            # Return False to indicate initialization failed
             return False
     else:
-        # Create new pipeline (will create vector store when documents are added)
+        # ====================================================================
+        # STEP 3: Create new pipeline (no existing vector store)
+        # ====================================================================
+        # No saved vector store found - create a new pipeline
+        # This happens on first run or after deleting vector store
+        
+        # Create RAGPipeline with default configuration
+        # vector_store parameter is omitted, so a new one will be created
+        # The new vector store will be empty until documents are added
         st.session_state.rag_pipeline = RAGPipeline(
             embedding_model=EMBEDDING_MODEL_DEFAULT,
             llm_model=LLM_MODEL_DEFAULT,
             ollama_host=OLLAMA_HOST_DEFAULT,
             min_confidence=MIN_CONFIDENCE_DEFAULT,
         )
+        
+        # Mark documents as NOT loaded (vector store is empty)
         st.session_state.documents_loaded = False
+        
+        # Return True to indicate successful initialization
         return True
 
 def load_documents():
