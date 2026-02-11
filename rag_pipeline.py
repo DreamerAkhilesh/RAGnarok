@@ -18,10 +18,32 @@ Author: RAGnarok Team
 Version: 2.0.0 (Docker + Gemma 2B)
 """
 
+# ============================================================================
+# IMPORTS - External libraries and internal modules
+# ============================================================================
+
+# typing: Type hints for better code documentation
+# List: Type hint for list objects
+# Dict: Type hint for dictionary objects
+# Optional: Type hint for values that can be None
+# Tuple: Type hint for tuple objects
 from typing import List, Dict, Optional, Tuple
+
+# ollama: Python client library for Ollama LLM service
+# Communicates with Ollama Docker container to generate responses
+# Supports both chat and generate APIs
 import ollama
+
+# EmbeddingGenerator: Our custom module for text-to-vector conversion
+# Converts queries and documents into 768-dimensional semantic vectors
 from embeddings import EmbeddingGenerator
+
+# VectorStore: Our custom FAISS-based vector database
+# Stores document embeddings and performs fast similarity search
 from vector_store import VectorStore
+
+# Guardrails: Our custom safety and validation system
+# Filters low-confidence results and validates response grounding
 from guardrails import Guardrails
 
 
@@ -41,7 +63,9 @@ class RAGPipeline:
     - Docker-based LLM deployment support
     """
 
-    
+    # ========================================================================
+    # INITIALIZATION METHOD
+    # ========================================================================
     def __init__(self, 
                  embedding_model: str = "BAAI/bge-base-en-v1.5",
                  llm_model: str = "gemma:2b",
@@ -71,23 +95,71 @@ class RAGPipeline:
         - VectorStore: FAISS database for similarity search
         - Guardrails: Safety system for response validation
         """
-        # Initialize embedding system for semantic text representation
+        # ====================================================================
+        # STEP 1: Initialize embedding system
+        # ====================================================================
+        # Create EmbeddingGenerator instance with specified model
+        # This will:
+        # 1. Download model from Hugging Face if not cached (~400MB)
+        # 2. Load tokenizer, transformer, and pooling layers
+        # 3. Set up on CPU (can be changed to GPU)
+        #
+        # The embedding generator is used for:
+        # - Converting document chunks to vectors (during setup)
+        # - Converting user queries to vectors (during retrieval)
         self.embedding_generator = EmbeddingGenerator(model_name=embedding_model)
         
-        # Store LLM configuration for Docker-based Ollama
+        # ====================================================================
+        # STEP 2: Store LLM configuration
+        # ====================================================================
+        # Save LLM model name for later use in generate_response()
+        # Examples: "gemma:2b", "llama3:8b", "mistral:7b"
+        # This is the model running in the Ollama Docker container
         self.llm_model = llm_model
+        
+        # Save Ollama host URL for Docker communication
+        # Default: http://localhost:11434 (standard Ollama port)
+        # This is where the Ollama Docker container is listening
         self.ollama_host = ollama_host
         
-        # Initialize safety system with confidence thresholding
+        # ====================================================================
+        # STEP 3: Initialize safety guardrails system
+        # ====================================================================
+        # Create Guardrails instance with confidence threshold
+        # Guardrails provide:
+        # - Confidence filtering (removes low-relevance contexts)
+        # - Response validation (checks grounding in documents)
+        # - Hallucination detection (monitors refusal keywords)
+        # - Warning generation (alerts users to low confidence)
+        #
+        # min_confidence: Minimum similarity score to accept a context
+        # - 0.5: Balanced threshold (default)
+        # - Higher (0.7+): More conservative, fewer false positives
+        # - Lower (0.3-): More permissive, more results
         self.guardrails = Guardrails(min_confidence=min_confidence)
         
-        # Set up vector store for document retrieval
+        # ====================================================================
+        # STEP 4: Set up vector store for document retrieval
+        # ====================================================================
+        # Check if a pre-existing vector store was provided
         if vector_store is None:
-            # Create new vector store with embedding dimensions
+            # No vector store provided - create a new one
+            # This happens during initial setup or when starting fresh
+            
+            # Get embedding dimension from the generator
+            # BGE-base: 768, BGE-large: 1024, MiniLM: 384
             dimension = self.embedding_generator.embedding_dimension
+            
+            # Create new VectorStore with:
+            # - dimension: Size of embedding vectors (768 for BGE-base)
+            # - index_type: "cosine" for cosine similarity search
+            #   (uses IndexFlatIP with normalized vectors)
             self.vector_store = VectorStore(dimension=dimension, index_type="cosine")
         else:
-            # Use existing vector store (for loading saved indices)
+            # Use the provided vector store
+            # This happens when loading from disk:
+            # vector_store = VectorStore.load("vector_store/")
+            # pipeline = RAGPipeline(vector_store=vector_store)
             self.vector_store = vector_store
     
     def build_prompt(self, query: str, contexts: List[Dict], max_context_length: int = 2000) -> str:
