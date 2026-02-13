@@ -389,7 +389,7 @@ Answer (based ONLY on the provided documents):"""
             'validation': validation or {}       # Guardrails validation results
         }
     
-    def add_documents(self, chunks: List[Dict]):
+    def add_documents(self, chunks: List[Dict], batch_size: int = 32):
         """
         Add Document Chunks to Vector Store
         ==================================
@@ -403,23 +403,35 @@ Answer (based ONLY on the provided documents):"""
                 - 'text': The actual text content
                 - 'source': Source document name
                 - Other metadata (chunk_index, start_char, etc.)
+            batch_size (int): Number of texts to process simultaneously
+                            Default: 32 (balanced memory usage and speed)
+                            Larger values = faster but more memory
+                            Smaller values = slower but less memory
         
         Process:
         1. Extract text content from chunks
-        2. Generate embeddings using BGE model
+        2. Generate embeddings using BGE model (in batches)
         3. Store embeddings and metadata in FAISS index
         
         Note: This is typically called during document ingestion phase
+        
+        Batch Processing:
+        - Processes multiple chunks at once for efficiency
+        - Default batch_size=32 works well on most CPUs
+        - Increase to 64-128 if you have GPU
+        - Decrease to 16 if you have limited memory
         """
         # Extract text content for embedding generation
         texts = [chunk['text'] for chunk in chunks]
         
         # Generate semantic embeddings for all text chunks
         # This is computationally expensive but done once per document
-        embeddings = self.embedding_generator.generate_embeddings(texts)
+        # batch_size parameter controls how many texts are processed at once
+        # Larger batches = faster but more memory usage
+        embeddings = self.embedding_generator.generate_embeddings(texts, batch_size=batch_size)
         
         # Add embeddings and metadata to FAISS vector store
         # Metadata includes source attribution and chunk information
         self.vector_store.add_vectors(embeddings, chunks)
         
-        print(f"Added {len(chunks)} chunks to vector store")
+        print(f"Added {len(chunks)} chunks to vector store (batch_size={batch_size})")
