@@ -434,9 +434,11 @@ Answer (based ONLY on documents):
 - CPU-only deployment
 
 **Optimization Strategies Used:**
-- ✅ Batch processing (32 chunks at a time)
+- ✅ Batch processing (32 chunks at a time by default)
 - ✅ Progress bar for user feedback
 - ✅ One-time processing (cached in vector store)
+
+**Note:** Both `app.py` and `main.py` use the same `RAGPipeline.add_documents()` method, which internally calls `generate_embeddings(texts, batch_size=32)`. The batch processing happens automatically in both interfaces with the same default batch size.
 
 **Improvement Opportunities:**
 - Add GPU support (10x faster)
@@ -444,6 +446,13 @@ Answer (based ONLY on documents):
 - Use ONNX runtime (1.5-2x faster)
 - Increase batch size on high-memory systems
 - Implement parallel processing for multiple documents
+
+**Batch Size Configuration:**
+- **Current:** Both `app.py` and `main.py` use `batch_size=32` (default)
+- **Why 32?** Good balance for CPU processing (not too much memory, not too slow)
+- **For GPU:** Can increase to 64-128 for faster processing
+- **For Low Memory:** Can decrease to 16 if running out of memory
+- **How to Change:** Now configurable via `add_documents(chunks, batch_size=64)`
 
 ---
 
