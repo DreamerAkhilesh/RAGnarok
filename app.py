@@ -100,9 +100,9 @@ TOP_K_DEFAULT = 5
 # - page_icon: Emoji or image for browser tab
 # - layout: "wide" uses full browser width, "centered" is narrower
 st.set_page_config(
-    page_title="RAGnarok - The End of AI Hallucinations",  # Browser tab title
-    page_icon="⚡",                                          # Lightning bolt emoji
-    layout="wide"                                           # Use full width
+    page_title="RAGnarok - The End of AI Hallucinations",
+    page_icon="⚡",
+    layout="wide"
 )
 
 # ============================================================================
@@ -312,102 +312,518 @@ def load_documents():
     st.session_state.documents_loaded = True
     return True
 
-# =============================================================================
+# ============================================================================
 # MAIN USER INTERFACE
-# =============================================================================
+# ============================================================================
+# This section creates the complete Streamlit web interface
+# Layout: Header → Config Display → Document Management → Query Interface
+
+# ============================================================================
+# SECTION 1: PAGE HEADER AND BRANDING
+# ============================================================================
+
+# Display main title with lightning bolt emoji
+# st.title(): Creates large, prominent heading
+# ⚡ emoji represents speed and power of the system
 st.title("⚡ RAGnarok")
+
+# Display tagline/subtitle
+# st.markdown(): Renders Markdown text
+# **text**: Makes text bold in Markdown
+# This communicates the core value proposition
 st.markdown("**The End of AI Hallucinations - Grounded Document Intelligence**")
 
+# ============================================================================
+# SECTION 2: SYSTEM CONFIGURATION DISPLAY
+# ============================================================================
+# Shows users the current system configuration for transparency
+# Helps users understand what models and settings are being used
 
+# Create 4 equal-width columns for metrics
+# st.columns(4): Divides horizontal space into 4 equal parts
+# Returns list of column objects: [col0, col1, col2, col3]
 info_cols = st.columns(4)
+
+# Column 0: Display embedding model
+# metric(): Shows a metric card with label and value
+# EMBEDDING_MODEL_DEFAULT: "BAAI/bge-base-en-v1.5"
+# This tells users which model converts text to vectors
 info_cols[0].metric("Embedding Model", EMBEDDING_MODEL_DEFAULT)
+
+# Column 1: Display LLM model
+# LLM_MODEL_DEFAULT: "gemma:2b"
+# This tells users which model generates responses
+# Running in Ollama Docker container
 info_cols[1].metric("LLM Model", LLM_MODEL_DEFAULT)
+
+# Column 2: Display minimum confidence threshold
+# MIN_CONFIDENCE_DEFAULT: 0.5
+# f"{value:.2f}": Format float to 2 decimal places
+# This tells users the similarity threshold for filtering contexts
 info_cols[2].metric("Min Confidence", f"{MIN_CONFIDENCE_DEFAULT:.2f}")
+
+# Column 3: Display top-k retrieval count
+# TOP_K_DEFAULT: 5
+# This tells users how many contexts are retrieved per query
 info_cols[3].metric("Top-K", TOP_K_DEFAULT)
 
+# Add visual separator line
+# st.divider(): Creates horizontal line to separate sections
+# Improves visual organization of the interface
 st.divider()
 
-# Document management (main screen)
+# ============================================================================
+# SECTION 3: DOCUMENT MANAGEMENT INTERFACE
+# ============================================================================
+# Allows users to load/reload documents and see loading status
+# Two-column layout: Button on left, Status on right
+
+# Create 2 columns with 1:3 width ratio
+# [1, 3]: Left column is 1/4 width, right column is 3/4 width
+# This gives more space to the status message
 doc_col1, doc_col2 = st.columns([1, 3])
+
+# ============================================================================
+# COLUMN 1: DOCUMENT LOADING BUTTON
+# ============================================================================
+# with statement: All Streamlit commands inside go to this column
 with doc_col1:
+    # Create button for loading/reloading documents
+    # st.button(): Creates clickable button
+    # Returns True when clicked, False otherwise
+    #
+    # Parameters:
+    # - "Load / Reload Documents": Button text
+    # - type="primary": Makes button blue/prominent
+    # - use_container_width=True: Button fills column width
+    #
+    # Why "Load / Reload"?
+    # - "Load": For first-time document loading
+    # - "Reload": For updating when documents change
     if st.button("Load / Reload Documents", type="primary", use_container_width=True):
+        # Button was clicked - process documents
+        
+        # Call two functions in sequence:
+        # 1. initialize_rag_pipeline(): Sets up or loads pipeline
+        # 2. load_documents(): Processes documents and creates embeddings
+        #
+        # and operator: Both must return True to proceed
+        # If either fails, st.rerun() is not called
         if initialize_rag_pipeline() and load_documents():
+            # Both functions succeeded
+            
+            # st.rerun(): Reloads the entire Streamlit app
+            # Why rerun?
+            # - Updates UI with new document count
+            # - Enables query interface
+            # - Refreshes all components with new state
+            # - Provides immediate feedback to user
             st.rerun()
+
+# ============================================================================
+# COLUMN 2: DOCUMENT LOADING STATUS
+# ============================================================================
+# Shows current status: documents loaded or instructions to load
 with doc_col2:
+    # Check if documents have been loaded
+    # st.session_state.documents_loaded: Boolean flag set during loading
     if st.session_state.documents_loaded:
+        # ====================================================================
+        # Documents are loaded - show success status
+        # ====================================================================
+        
+        # Get statistics from vector store
+        # get_stats(): Returns dict with num_vectors, dimension, index_type
         stats = st.session_state.rag_pipeline.vector_store.get_stats()
+        
+        # Display success message with chunk count
+        # st.success(): Shows green success box
+        # stats['num_vectors']: Number of document chunks in vector store
+        # Example: "37 chunks ready for search"
+        #
+        # Why show chunk count?
+        # - Confirms documents are loaded
+        # - Shows scale of knowledge base
+        # - Provides transparency
         st.success(f"{stats['num_vectors']} chunks ready for search")
     else:
+        # ====================================================================
+        # Documents not loaded - show instructions
+        # ====================================================================
+        
+        # Display informational message
+        # st.info(): Shows blue info box
+        # Tells users what to do next
+        # Clear, actionable instructions
         st.info("Add PDF/TXT/MD files to `documents/` then click Load.")
 
+# Add caption explaining the RAG workflow
+# st.caption(): Shows small, gray text
+# Educates users about the system's process
+# Flow visualization helps users understand what happens
 st.caption("Flow: Query → Embedding → Vector Search → Context Retrieval → LLM Answer")
 
-# Initialize pipeline
+# ============================================================================
+# SECTION 4: PIPELINE INITIALIZATION CHECK
+# ============================================================================
+# Ensures pipeline is initialized before showing query interface
+# Defensive programming: Handles case where pipeline wasn't initialized
+
+# Check if pipeline exists in session state
+# None: Pipeline hasn't been initialized yet
 if st.session_state.rag_pipeline is None:
+    # Pipeline doesn't exist - initialize it now
+    # This happens on first page load
+    # Creates empty pipeline ready for document loading
     initialize_rag_pipeline()
 
-# Main content area
+# ============================================================================
+# SECTION 5: MAIN CONTENT AREA - CONDITIONAL DISPLAY
+# ============================================================================
+# Shows different content based on whether documents are loaded
+# Two states: 1) Documents not loaded, 2) Documents loaded (query interface)
+
+# Check document loading status
+# This determines which interface to show
 if not st.session_state.documents_loaded:
+    # ========================================================================
+    # STATE 1: DOCUMENTS NOT LOADED - SHOW INSTRUCTIONS
+    # ========================================================================
+    # User needs to load documents before querying
+    # Show helpful information about available documents
+    
+    # Display informational message
+    # st.info(): Blue info box
+    # Clear instruction for what user needs to do
     st.info("Please load documents before asking questions.")
     
-    # Show document directory info
+    # ========================================================================
+    # Show available documents in the directory
+    # ========================================================================
+    # Helps users see what files are available to load
+    # Provides feedback about what will be processed
+    
+    # Define documents directory path
     documents_dir = "documents"
+    
+    # Check if documents directory exists
+    # os.path.exists(): Returns True if path exists
     if os.path.exists(documents_dir):
+        # Directory exists - scan for files
+        
+        # Get all files in directory
+        # Path(documents_dir).glob("*"): Returns iterator of all items
+        # list(): Convert iterator to list
+        # This includes all files and subdirectories
         files = list(Path(documents_dir).glob("*"))
+        
+        # Filter for supported file types
+        # List comprehension: [item for item in list if condition]
+        # f.suffix.lower(): Get file extension in lowercase
+        # in ['.pdf', '.txt', '.md', '.markdown']: Check if supported
+        #
+        # Why filter?
+        # - Only show files that can be processed
+        # - Avoid confusing users with unsupported files
+        # - Provide clear expectations
         supported_files = [f for f in files if f.suffix.lower() in ['.pdf', '.txt', '.md', '.markdown']]
         
+        # Check if any supported files were found
         if supported_files:
+            # ================================================================
+            # Supported files found - display list
+            # ================================================================
+            
+            # Display subheader
+            # st.subheader(): Medium-sized heading
             st.subheader("Available Documents")
+            
+            # Loop through each supported file
+            # Displays each filename with bullet point
             for file in supported_files:
+                # st.text(): Display plain text (no formatting)
+                # file.name: Just the filename (not full path)
+                # f"• {file.name}": Bullet point + filename
+                #
+                # Example output:
+                # • document1.pdf
+                # • notes.txt
+                # • readme.md
                 st.text(f"• {file.name}")
         else:
+            # ================================================================
+            # No supported files found - show warning
+            # ================================================================
+            
+            # Display warning message
+            # st.warning(): Yellow warning box
+            # Tells user directory is empty or has wrong file types
             st.warning(f"No supported documents found in '{documents_dir}' folder.")
+            
+            # Display caption with supported formats
+            # st.caption(): Small gray text
+            # Educates user about what file types are supported
             st.caption("Supported formats: PDF (.pdf), Text (.txt), Markdown (.md, .markdown)")
 else:
-    # Query interface
+    # ========================================================================
+    # STATE 2: DOCUMENTS LOADED - SHOW QUERY INTERFACE
+    # ========================================================================
+    # Documents are loaded and ready for querying
+    # Display complete query interface with input and results
+    
+    # ========================================================================
+    # QUERY INPUT SECTION
+    # ========================================================================
+    
+    # Display section heading
+    # st.subheader(): Medium-sized heading
+    # Clear label for the query input area
     st.subheader("Ask a Question")
     
-    # Query input
+    # Create text input area for user query
+    # st.text_area(): Multi-line text input widget
+    #
+    # Parameters:
+    # - "Enter your question": Label (hidden by label_visibility)
+    # - placeholder: Gray text shown when empty
+    # - label_visibility="collapsed": Hides the label
+    #
+    # Why text_area instead of text_input?
+    # - Allows longer questions
+    # - More comfortable for typing
+    # - Can see full question while typing
+    #
+    # Returns: String containing user's input
+    # Empty string if nothing entered
     query = st.text_area(
         "Enter your question",
         placeholder="e.g., What is the main topic discussed in the documents?",
         label_visibility="collapsed",
     )
     
+    # ========================================================================
+    # QUERY PROCESSING SECTION
+    # ========================================================================
+    # Triggered when user clicks Search button with non-empty query
+    
+    # Create search button and check conditions
+    # st.button(): Creates clickable button
+    # Returns True when clicked
+    #
+    # Conditions:
+    # 1. st.button("Search", type="primary"): Button clicked
+    # 2. and query: Query is not empty
+    #
+    # Both must be True to proceed
+    # Prevents processing empty queries
     if st.button("Search", type="primary") and query:
+        # ====================================================================
+        # User clicked Search with valid query - process it
+        # ====================================================================
+        
+        # Show spinner during processing
+        # with st.spinner(): Context manager for loading indicator
+        # Displays animated spinner with message
+        # Automatically disappears when block completes
+        #
+        # Why spinner?
+        # - Processing takes 1-3 seconds
+        # - Provides visual feedback
+        # - Prevents user confusion
+        # - Shows system is working
         with st.spinner("Searching documents and generating response..."):
-            # Ensure pipeline uses the fixed configuration
+            # ================================================================
+            # STEP 1: Ensure pipeline configuration is correct
+            # ================================================================
+            # Reset configuration to defaults in case it was modified
+            # Defensive programming: Ensures consistent behavior
+            
+            # Set LLM model to default
+            # Ensures we're using the correct model (gemma:2b)
             st.session_state.rag_pipeline.llm_model = LLM_MODEL_DEFAULT
+            
+            # Set Ollama host to default
+            # Ensures we're connecting to correct Docker container
             st.session_state.rag_pipeline.ollama_host = OLLAMA_HOST_DEFAULT
+            
+            # Set confidence threshold to default
+            # Ensures consistent filtering behavior
             st.session_state.rag_pipeline.guardrails.min_confidence = MIN_CONFIDENCE_DEFAULT
             
-            # Generate response
+            # ================================================================
+            # STEP 2: Generate response through RAG pipeline
+            # ================================================================
+            # This is the main processing step
+            # Calls the complete RAG workflow:
+            # 1. Convert query to embedding
+            # 2. Search vector store for similar chunks
+            # 3. Filter by confidence threshold
+            # 4. Build prompt with contexts
+            # 5. Send to LLM (Ollama/Gemma)
+            # 6. Validate response
+            # 7. Return formatted result
+            #
+            # Parameters:
+            # - query: User's question string
+            # - top_k: Number of contexts to retrieve (5)
+            # - use_guardrails: Enable safety validation (True)
+            #
+            # Returns: Dictionary with:
+            # - response: Generated answer text
+            # - sources: List of source documents
+            # - contexts: Retrieved document chunks
+            # - confidence: Max similarity score
+            # - average_confidence: Mean similarity score
+            # - validation: Guardrails validation results
             result = st.session_state.rag_pipeline.generate_response(
                 query=query,
                 top_k=TOP_K_DEFAULT,
                 use_guardrails=True
             )
         
-        # Display response
+        # ====================================================================
+        # STEP 3: Display the generated answer
+        # ====================================================================
+        # Show the main response to user's question
+        
+        # Display section heading
+        # st.subheader(): Medium-sized heading
         st.subheader("Answer")
+        
+        # Display the response text
+        # st.markdown(): Renders Markdown text
+        # result['response']: The generated answer string
+        #
+        # Why markdown?
+        # - Supports formatting (bold, italic, lists)
+        # - LLM might generate formatted text
+        # - Better readability than plain text
         st.markdown(result['response'])
         
-        # Display sources
+        # ====================================================================
+        # STEP 4: Display source attribution
+        # ====================================================================
+        # Shows which documents were used to generate the answer
+        # Critical for transparency and fact-checking
+        
+        # Check if any sources were used
+        # result['sources']: List of source document filenames
+        # Empty list if no sources (shouldn't happen normally)
         if result['sources']:
+            # Sources exist - display them
+            
+            # Display section heading
             st.subheader("Sources")
+            
+            # Loop through each source document
+            # Displays each source with bullet point
             for source in result['sources']:
+                # st.caption(): Small gray text
+                # f"• {source}": Bullet point + filename
+                #
+                # Why caption instead of text?
+                # - Less prominent than main answer
+                # - Gray color indicates metadata
+                # - Consistent with UI design
+                #
+                # Example output:
+                # • network_topologies.txt
+                # • document.pdf
                 st.caption(f"• {source}")
         
-        # Compact retrieval details
+        # ====================================================================
+        # STEP 5: Display confidence metrics
+        # ====================================================================
+        # Shows similarity scores for transparency
+        # Helps users assess answer reliability
+        
+        # Create 2 equal-width columns for metrics
+        # st.columns(2): Divides space into 2 equal parts
         details_col1, details_col2 = st.columns(2)
+        
+        # Column 1: Display maximum confidence score
+        # metric(): Shows metric card with label and value
+        # result['confidence']: Highest similarity score
+        # f"{value:.3f}": Format to 3 decimal places
+        #
+        # What it means:
+        # - 0.85: Very relevant context found
+        # - 0.60: Moderately relevant context
+        # - 0.40: Low relevance (might be filtered)
         details_col1.metric("Max Confidence", f"{result['confidence']:.3f}")
+        
+        # Column 2: Display average confidence score
+        # result['average_confidence']: Mean of all similarity scores
+        # Indicates overall relevance of retrieved contexts
+        #
+        # Why show both max and average?
+        # - Max: Best match quality
+        # - Average: Overall context quality
+        # - Together: Complete picture of retrieval quality
         details_col2.metric("Avg Confidence", f"{result['average_confidence']:.3f}")
         
+        # ====================================================================
+        # STEP 6: Display retrieved contexts (optional)
+        # ====================================================================
+        # Shows the actual document chunks that were used
+        # Useful for debugging and understanding the answer
+        
+        # Check if contexts were retrieved
+        # result.get('contexts'): Safely get contexts (None if missing)
         if result.get('contexts'):
+            # Contexts exist - display them
+            
+            # Display section heading
             st.subheader("Top Retrieved Contexts")
+            
+            # Loop through first 3 contexts
+            # enumerate(list, start): Returns (index, item) pairs
+            # [:3]: Slice to get only first 3 contexts
+            # start=1: Start counting from 1 instead of 0
+            #
+            # Why only 3?
+            # - Prevents UI clutter
+            # - Shows most relevant contexts
+            # - User can see what influenced the answer
             for i, ctx in enumerate(result['contexts'][:3], 1):
+                # Display context with source and truncated text
+                # st.text(): Plain text display
+                #
+                # Format: [source] text...
+                # - ctx.get('source', 'Unknown'): Source filename
+                # - ctx['text'][:500]: First 500 characters
+                # - '...' if len(ctx['text']) > 500: Add ellipsis if truncated
+                #
+                # Why truncate?
+                # - Contexts can be long (512 chars)
+                # - 500 chars is enough to understand content
+                # - Keeps UI manageable
                 st.text(f"[{ctx.get('source', 'Unknown')}] {ctx['text'][:500]}{'...' if len(ctx['text']) > 500 else ''}")
 
-# Footer
+# ============================================================================
+# SECTION 6: FOOTER
+# ============================================================================
+# Shows attribution and technology stack
+# Provides credit to open-source tools used
+
+# Add visual separator
+# st.divider(): Horizontal line
+# Separates main content from footer
 st.divider()
+
+# Display footer text
+# st.caption(): Small gray text
+# Lists the open-source technologies powering RAGnarok
+#
+# Technologies mentioned:
+# - Sentence Transformers: For embeddings (BGE model)
+# - FAISS: For vector similarity search
+# - Ollama Docker: For LLM inference (Gemma 2B)
+# - Streamlit: For web interface
+#
+# Why show this?
+# - Transparency about technology stack
+# - Credit to open-source community
+# - Helps users understand the system
+# - Professional presentation
 st.caption("Built with open-source tools: Sentence Transformers, FAISS, Ollama Docker, Streamlit")
